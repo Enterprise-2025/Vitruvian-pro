@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Peso & Benessere – Smart Coach (Patch Allenamento)</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--txt:#1f2937;--muted:#6b7280;--brand:#16a34a;--brand2:#22c55e;--line:#e5e7eb;--warn:#f59e0b;--bad:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);padding:.9rem 1rem;z-index:10}
+header h1{margin:0;font-size:1.06rem;display:flex;gap:.5rem;align-items:center}
+main{padding:1rem 1rem 7.5rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.row{display:flex;gap:.75rem;align-items:center}
+.row>div{flex:1}
+h2{font-size:1rem;margin:0 0 .75rem}
+label{font-size:.9rem;color:var(--muted)}
+input,select,button{font-size:1rem}
+input[type="number"], input[type="date"], input[type="time"], input[type="text"], select{
+  width:100%;padding:.7rem;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--txt)
+}
+button{cursor:pointer}
+.btn{width:100%;padding:.8rem;border:0;border-radius:10px;background:var(--brand);color:#fff}
+.btn.secondary{background:#111827}
+.btn.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+.btn.warn{background:var(--warn)}
+.muted{color:var(--muted);font-size:.9rem}
+.progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand2));width:0%}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{display:flex;align-items:center;gap:.6rem;padding:.45rem 0;border-bottom:1px dashed var(--line)}
+ul.clean li:last-child{border-bottom:0}
+.pill{display:inline-block;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+canvas{width:100%;height:140px;display:block}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--card);border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;align-items:center;z-index:10}
+nav.bottom a{flex:1;text-align:center;text-decoration:none;color:var(--muted);font-size:1.25rem;padding-top:.25rem}
+nav.bottom a.active{color:var(--brand)}
+.section{display:none}
+.section.active{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+.tiny{font-size:.8rem}
+.spacer{height:.5rem}
+.badge{font-size:.75rem;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:999px;padding:.15rem .45rem}
+.state{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .45rem;border-radius:999px;font-size:.78rem;border:1px solid var(--line)}
+.state.green{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+.state.yellow{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.state.red{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.dayNav{display:flex;gap:.5rem;align-items:center;justify-content:space-between}
+.mealsWrap{display:grid;grid-template-columns:1fr;gap:.75rem}
+.meal{border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;background:#fff}
+.meal h3{margin:.1rem 0 .6rem;font-size:.95rem}
+.options{display:grid;grid-template-columns:1fr;gap:.5rem}
+.option{border:1px solid var(--line);border-radius:12px;padding:.6rem;display:flex;align-items:flex-start;gap:.6rem}
+.option.selected{border-color:var(--brand)}
+.option .radio{width:20px;height:20px;border:2px solid var(--line);border-radius:999px;margin-top:.2rem}
+.option.selected .radio{border-color:var(--brand);box-shadow:inset 0 0 0 5px var(--brand)}
+.option .meta{font-size:.82rem;color:var(--muted)}
+hr.sep{border:none;border-top:1px dashed var(--line);margin:.6rem 0}
+.small{font-size:.78rem;color:var(--muted)}
+.toggle{display:flex;align-items:center;gap:.6rem}
+.toggle input{width:18px;height:18px}
+/* Allenamento */
+.workout-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.block{border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;margin:.5rem 0;background:#fff}
+.timer{display:flex;gap:.6rem;align-items:center}
+.timer .clock{font-variant-numeric:tabular-nums;font-size:1.1rem}
+.slider{width:100%}
+.weekGrid{display:grid;grid-template-columns:1fr;gap:.5rem}
+.cardRow{display:flex;align-items:center;justify-content:space-between}
+.badgeDone{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:999px;padding:.15rem .45rem;font-size:.75rem}
+.badgePlanned{background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe;border-radius:999px;padding:.15rem .45rem;font-size:.75rem}
+.badgeMiss{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:999px;padding:.15rem .45rem;font-size:.75rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 Peso & Benessere <span class="pill" id="pillGoal"></span></h1>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section id="home" class="section active">
+    <div class="card">
+      <h2>Progresso</h2>
+      <div class="row">
+        <div><label>Peso attuale</label><div style="font-size:1.4rem"><strong id="pesoAttuale">—</strong> kg</div></div>
+        <div><label>Obiettivo</label><div style="font-size:1.4rem"><strong id="pesoTargetView">—</strong> kg</div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="progress"><span id="bar"></span></div>
+      <div class="muted" id="progressTxt" style="margin-top:.5rem">Imposta i tuoi dati e aggiungi la prima pesata.</div>
+      <div id="stateHint" style="margin-top:.5rem"></div>
+    </div>
+
+    <div class="card">
+      <h2>Ultime pesate</h2>
+      <canvas id="chart" width="600" height="160" aria-label="Grafico pesate"></canvas>
+      <div class="row" style="margin-top:.5rem">
+        <input id="pesoInput" type="number" step="0.1" placeholder="Nuovo peso (kg)"/>
+        <button class="btn" id="addPeso">➕ Aggiungi</button>
+      </div>
+      <ul id="storico" class="clean tiny" style="margin-top:.6rem"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Coach</h2>
+      <div id="coachMsg" class="muted">Completa le impostazioni per consigli mirati.</div>
+    </div>
+  </section>
+
+  <!-- ESERCIZI SMART -->
+  <section id="esercizi" class="section">
+    <div class="card">
+      <div class="workout-head">
+        <h2>Allenamento di oggi</h2>
+        <span class="pill" id="slotInfo">—</span>
+      </div>
+      <div class="small" id="planTitle">—</div>
+      <div class="block" id="warmupBox"><strong>Warm-up 5′</strong><div class="small">Mobilità anche/spalle + camminata veloce</div></div>
+      <div class="block" id="strengthBox"><strong>Forza</strong><ul id="strengthList" class="clean tiny"></ul></div>
+      <div class="block" id="metconBox"><strong>Finisher</strong><div class="timer"><button class="btn ghost" id="startFinisher">▶︎ Start</button><div class="clock" id="clock">00:00</div><button class="btn ghost" id="stopFinisher">⏹︎ Stop</button></div><div class="small" id="finisherDesc">—</div></div>
+      <div class="block" id="cooldownBox"><strong>Cool-down 3–5′</strong><div class="small">Stretching gambe/schiena + respiro lento</div></div>
+      <div class="block">
+        <label>RPE (percezione sforzo) </label>
+        <input type="range" min="4" max="10" step="1" value="7" id="rpe" class="slider"/>
+        <div class="small">Trascina: 4 facili → 10 durissimi</div>
+      </div>
+      <button class="btn" id="completeWorkout">✅ Segna seduta completata</button>
+    </div>
+
+    <div class="card">
+      <h2>Settimana</h2>
+      <div class="weekGrid" id="weekGrid"></div>
+    </div>
+  </section>
+
+  <!-- MENU SMART (già presente) -->
+  <section id="menu" class="section">
+    <div class="card">
+      <div class="dayNav">
+        <button class="btn ghost" id="prevDay">◀︎</button>
+        <div><span class="badge" id="dayBadge">Lunedì</span></div>
+        <button class="btn ghost" id="nextDay">▶︎</button>
+      </div>
+      <div class="small" style="margin-top:.4rem">Scegli per ogni pasto 1 delle 3 alternative. La spesa si aggiorna da sola.</div>
+    </div>
+    <div class="card">
+      <div class="mealsWrap" id="mealsWrap"></div>
+      <hr class="sep"/>
+      <div class="row">
+        <button class="btn ghost" id="rigeneraGiorno">🔄 Rigenera proposte del giorno</button>
+        <button class="btn secondary" id="rigeneraSettimana">🧠 Rigenera tutta la settimana</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPESA -->
+  <section id="spesa" class="section">
+    <div class="card">
+      <h2>Lista spesa (settimanale)</h2>
+      <div class="row">
+        <select id="weekSelect"></select>
+        <label class="toggle"><input type="checkbox" id="incluseTutte"/> Includi tutte le alternative</label>
+      </div>
+      <div class="spacer"></div>
+      <ul id="listaSpesa" class="clean"></ul>
+      <div class="spacer"></div>
+      <div class="row">
+        <button class="btn ghost" id="rebuildSpesa">🔄 Rigenera da scelte</button>
+        <button class="btn secondary" id="stampaSpesa">🖨️ Stampa / Condividi</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section id="calendario" class="section">
+    <div class="card">
+      <h2>Calendario & Promemoria</h2>
+      <div class="muted tiny">Prossimi 7 giorni con slot allenamento impostato.</div>
+      <ul id="calList" class="clean" style="margin-top:.5rem"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Storico pesate</h2>
+      <ul id="storicoCal" class="clean tiny"></ul>
+    </div>
+  </section>
+
+  <!-- IMPOSTAZIONI (incluso blocco Allenamento Smart) -->
+  <section id="settings" class="section">
+    <div class="card">
+      <h2>Profilo & Obiettivi</h2>
+      <div class="grid2">
+        <div><label>Peso iniziale</label><input id="pesoStart" type="number" step="0.1" placeholder="es. 82"/></div>
+        <div><label>Peso target</label><input id="pesoTarget" type="number" step="0.1" placeholder="es. 69"/></div>
+      </div>
+      <div class="grid2" style="margin-top:.6rem">
+        <div><label>Data obiettivo</label><input id="dataTarget" type="date"/></div>
+        <div><label>Orario allenamento</label><input id="orario" type="time"/></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="salvaSetup">💾 Salva impostazioni</button>
+    </div>
+
+    <div class="card">
+      <h2>Strategia dimagrimento</h2>
+      <div class="row">
+        <div><label>Kg da perdere</label><div id="kgDaPerdere" style="font-weight:600">—</div></div>
+        <div><label>Settimane disponibili</label><div id="weeksAvail" style="font-weight:600">—</div></div>
+      </div>
+      <div class="row" style="margin-top:.4rem">
+        <div><label>Media richiesta</label><div id="mediaReq" class="state">—</div></div>
+        <div><label>Consiglio</label><div id="hintReq" class="small">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Preferenze alimentari</h2>
+      <div class="grid3">
+        <label class="toggle"><input type="checkbox" id="prefCarne" checked/> Carne bianca</label>
+        <label class="toggle"><input type="checkbox" id="prefPesce" checked/> Pesce</label>
+        <label class="toggle"><input type="checkbox" id="prefLegumi" checked/> Legumi</label>
+      </div>
+      <div class="grid3" style="margin-top:.4rem">
+        <label class="toggle"><input type="checkbox" id="prefUova" checked/> Uova</label>
+        <label class="toggle"><input type="checkbox" id="prefLatticini" checked/> Latticini</label>
+        <label class="toggle"><input type="checkbox" id="prefGlutine" checked/> Glutine (ok)</label>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="salvaPreferenze">✅ Salva preferenze</button>
+    </div>
+
+    <div class="card">
+      <h2>Dieta automatica (🇮🇹)</h2>
+      <div class="small">Genera 2–3 alternative per pasto, variate su stagione, preferenze e progressi.</div>
+      <div class="row" style="margin-top:.6rem">
+        <button class="btn secondary" id="generaSettimana">🧠 Genera menù smart (settimana corrente)</button>
+        <button class="btn ghost" id="resetMenu">🗑️ Reset menù settimana</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Impostazioni allenamento</h2>
+      <div class="grid3">
+        <div>
+          <label>Giorni a settimana</label>
+          <select id="al_days">
+            <option>3</option><option selected>4</option><option>5</option><option>6</option>
+          </select>
+        </div>
+        <div>
+          <label>Durata seduta</label>
+          <select id="al_slot">
+            <option>20</option><option selected>30</option><option>45</option>
+          </select>
+        </div>
+        <div>
+          <label>Livello</label>
+          <select id="al_level">
+            <option>base</option><option selected>intermedio</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:.6rem">
+        <label class="toggle"><input type="checkbox" id="eq_body" checked/> Corpo libero</label>
+        <label class="toggle"><input type="checkbox" id="eq_db" checked/> Manubri</label>
+        <label class="toggle"><input type="checkbox" id="eq_gym"/> Palestra</label>
+      </div>
+      <div class="grid3" style="margin-top:.6rem">
+        <label class="toggle"><input type="checkbox" id="no_jumps"/> Evita salti</label>
+        <label class="toggle"><input type="checkbox" id="knee_safe"/> Ginocchio delicato</label>
+        <label class="toggle"><input type="checkbox" id="back_safe"/> Schiena delicata</label>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="saveWorkoutPrefs">💾 Salva allenamento</button>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom">
+  <a href="#home" data-tab="home" class="active">🏠</a>
+  <a href="#esercizi" data-tab="esercizi">🏋️</a>
+  <a href="#menu" data-tab="menu">🍴</a>
+  <a href="#spesa" data-tab="spesa">🛒</a>
+  <a href="#calendario" data-tab="calendario">📅</a>
+  <a href="#settings" data-tab="settings">⚙️</a>
+</nav>
+
+<script>
+/* ================== STORAGE & STATE ================== */
+const STORE={get(){return JSON.parse(localStorage.getItem('pb:data')||'{}')},set(v){localStorage.setItem('pb:data',JSON.stringify(v))}};
+const state=Object.assign({
+  pesoStart:null,pesoTarget:null,dataTarget:null,orario:"18:30",pesate:[],exDone:{},
+  prefs:{carne:true,pesce:true,legumi:true,uova:true,latticini:true,glutine:true},
+  menu:{}, spesa:{},
+  workout:{days:4,slot:30,level:'intermedio',equip:{body:true,db:true,gym:false},safe:{noJumps:false,knee:false,back:false},
+           plan:{}, // plan[weekKey][dayIndex]={title, strength:[{name,sets,reps,alt}], finisher:{type,duration,desc}}
+           log:{}   // log[isoDate]={rpe:number, done:true}
+  }
+},STORE.get());
+const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);const fmt=n=>(Math.round(n*10)/10).toFixed(1);
+const iso=(d=new Date())=>d.toISOString().slice(0,10);const days=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+function weekKey(d=new Date()){const dt=new Date(d.getTime());dt.setHours(0,0,0,0);dt.setDate(dt.getDate()+3-((dt.getDay()+6)%7));const week1=new Date(dt.getFullYear(),0,4);const wk=1+Math.round(((dt-week1)/86400000-3+((week1.getDay()+6)%7))/7);return `${dt.getFullYear()}-W${String(wk).padStart(2,'0')}`}
+function save(){STORE.set(state)}
+
+/* ================== DIETA SMART (riuso da versione precedente) ================== */
+const RECIPES=[
+  {meal:'colazione',season:['all'],kcal:350,name:'Yogurt greco + muesli + mirtilli',items:[{n:'Yogurt greco',q:150,u:'g'},{n:'Muesli integrale',q:30,u:'g'},{n:'Mirtilli',q:50,u:'g'}],tags:['latticini','glutine']},
+  {meal:'colazione',season:['all'],kcal:320,name:'Cappuccino + fette biscottate e marmellata',items:[{n:'Latte scremato',q:200,u:'ml'},{n:'Caffè',q:1,u:'tazza'},{n:'Fette biscottate integrali',q:40,u:'g'},{n:'Marmellata senza zuccheri',q:20,u:'g'}],tags:['latticini','glutine']},
+  {meal:'colazione',season:['all'],kcal:360,name:'Smoothie banana-avena-soia',items:[{n:'Banana',q:1,u:'pz'},{n:'Latte di soia',q:200,u:'ml'},{n:'Fiocchi d’avena',q:30,u:'g'}],tags:['veg','glutine']},
+  {meal:'spuntino',season:['all'],kcal:180,name:'Mela + noci',items:[{n:'Mela',q:1,u:'pz'},{n:'Noci',q:15,u:'g'}],tags:['veg']},
+  {meal:'spuntino',season:['all'],kcal:150,name:'Pera + mandorle',items:[{n:'Pera',q:1,u:'pz'},{n:'Mandorle',q:12,u:'g'}],tags:['veg']},
+  {meal:'spuntino',season:['all'],kcal:120,name:'Yogurt naturale',items:[{n:'Yogurt naturale',q:125,u:'g'}],tags:['latticini']},
+  {meal:'pranzo',season:['all'],kcal:600,name:'Pasta integrale tonno e zucchine',items:[{n:'Pasta integrale',q:70,u:'g'},{n:'Tonno al naturale sgocciolato',q:100,u:'g'},{n:'Zucchine',q:150,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['pesce','glutine']},
+  {meal:'pranzo',season:['all'],kcal:620,name:'Insalata di farro, pomodorini e mozzarella',items:[{n:'Farro',q:80,u:'g'},{n:'Pomodorini',q:120,u:'g'},{n:'Mozzarella light',q:80,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['latticini','glutine']},
+  {meal:'pranzo',season:['all'],kcal:610,name:'Riso basmati con pollo e peperoni',items:[{n:'Riso basmati',q:70,u:'g'},{n:'Petto di pollo',q:120,u:'g'},{n:'Peperoni',q:150,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['carne']},
+  {meal:'pranzo',season:['all'],kcal:580,name:'Farro con ceci e verdure',items:[{n:'Farro',q:80,u:'g'},{n:'Ceci cotti',q:120,u:'g'},{n:'Zucchine',q:120,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['legumi','glutine','veg']},
+  {meal:'spuntino2',season:['all'],kcal:160,name:'Ricotta light + pera',items:[{n:'Ricotta light',q:100,u:'g'},{n:'Pera',q:1,u:'pz'}],tags:['latticini']},
+  {meal:'spuntino2',season:['all'],kcal:150,name:'Kefir + frutti di bosco',items:[{n:'Kefir',q:150,u:'g'},{n:'Frutti di bosco',q:80,u:'g'}],tags:['latticini']},
+  {meal:'spuntino2',season:['all'],kcal:140,name:'Carote crude + hummus',items:[{n:'Carote',q:150,u:'g'},{n:'Hummus',q:40,u:'g'}],tags:['legumi','veg']},
+  {meal:'cena',season:['all'],kcal:520,name:'Orata al forno + broccoli + pane integrale',items:[{n:'Orata',q:150,u:'g'},{n:'Broccoli',q:200,u:'g'},{n:'Pane integrale',q:40,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['pesce','glutine']},
+  {meal:'cena',season:['all'],kcal:500,name:'Uova strapazzate + zucchine + patate lesse',items:[{n:'Uova',q:2,u:'pz'},{n:'Zucchine',q:150,u:'g'},{n:'Patate',q:150,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['uova','veg']},
+  {meal:'cena',season:['all'],kcal:530,name:'Pollo al forno + carote + insalata',items:[{n:'Petto di pollo',q:150,u:'g'},{n:'Carote',q:150,u:'g'},{n:'Insalata mista',q:100,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['carne']},
+  {meal:'cena',season:['all'],kcal:540,name:'Ceci in padella + spinaci + pane toscano',items:[{n:'Ceci cotti',q:150,u:'g'},{n:'Spinaci',q:200,u:'g'},{n:'Pane toscano',q:40,u:'g'},{n:'Olio EVO',q:5,u:'g'}],tags:['legumi','glutine','veg']}
+];
+const MEAL_ORDER=['colazione','spuntino','pranzo','spuntino2','cena'];
+function stagione(){const m=(new Date()).getMonth()+1; if([12,1,2].includes(m))return'winter'; if([3,4,5].includes(m))return'spring'; if([6,7,8].includes(m))return'summer'; return'autumn'}
+function filtroPreferenze(r){const p=state.prefs; if(r.tags.includes('carne')&&!p.carne)return false; if(r.tags.includes('pesce')&&!p.pesce)return false; if(r.tags.includes('legumi')&&!p.legumi)return false; if(r.tags.includes('uova')&&!p.uova)return false; if(r.tags.includes('latticini')&&!p.latticini)return false; if(r.tags.includes('glutine')&&!p.glutine)return false; return true}
+function pickAlternatives(meal){const stag=stagione(); const pool=RECIPES.filter(r=>r.meal===meal&&(r.season.includes('all')||r.season.includes(stag))&&filtroPreferenze(r)); const categ={carbo:pool.filter(r=>r.name.match(/Pasta|Riso|Farro|Pane|Basmati|Integrale/i)),prote:pool.filter(r=>r.tags.some(t=>['carne','pesce','uova'].includes(t))),veg:pool.filter(r=>r.tags.includes('veg')||r.tags.includes('legumi'))}; const res=[]; function take(arr){if(arr.length){const i=Math.floor(Math.random()*arr.length);res.push(arr.splice(i,1)[0])}} take(categ.carbo); take(categ.prote); take(categ.veg); while(res.length<3 && pool.length){const i=Math.floor(Math.random()*pool.length);res.push(pool.splice(i,1)[0])} return res.slice(0,3).map(r=>({id:crypto.randomUUID(),name:r.name,items:r.items,kcal:r.kcal}))}
+function ensureWeekMenu(k){ if(!state.menu[k]) state.menu[k]={}; for(let d=0;d<7;d++){ if(!state.menu[k][d]) state.menu[k][d]={}; MEAL_ORDER.forEach(m=>{ if(!state.menu[k][d][m]) state.menu[k][d][m]={options:pickAlternatives(m),chosenIndex:0}; }); } }
+function regenDay(k,idx){ ensureWeekMenu(k); MEAL_ORDER.forEach(m=> state.menu[k][idx][m]={options:pickAlternatives(m),chosenIndex:0}); save() }
+function regenWeek(k){ for(let d=0;d<7;d++) regenDay(k,d) }
+
+/* ================== SHOPPING ================== */
+function rebuildShopping(k){const includeAll=$('#incluseTutte')?.checked||false; const map={}; ensureWeekMenu(k); for(let d=0;d<7;d++){ MEAL_ORDER.forEach(m=>{ const block=state.menu[k][d][m]; const arr=includeAll?block.options:[block.options[block.chosenIndex]]; arr.forEach(opt=>{ (opt.items||[]).forEach(it=>{ const key=`${it.n} (${it.u})`; map[key]=map[key]||{q:0,checked:false}; map[key].q+=(Number(it.q)||0); }) }); }) } const prev=state.spesa[k]||{}; const next={}; Object.keys(map).sort().forEach(k2=>{ next[k2]={q:map[k2].q, checked:prev[k2]?.checked||false} }); state.spesa[k]=next; save() }
+
+/* ================== WORKOUT SMART ================== */
+const EX_DB={ // semplici, tag per sostituzioni
+  squat:{name:'Squat goblet',need:'db',zone:'gambe',lowImpact:true,alt:['Box squat','Chair squat']},
+  pushup:{name:'Push-up',need:'body',zone:'spinta',lowImpact:true,alt:['Incline push-up','Knee push-up']},
+  row:{name:'Rematore manubrio',need:'db',zone:'tirata',lowImpact:true,alt:['Elastico rematore','Row al tavolo']},
+  lunge:{name:'Affondi',need:'body',zone:'gambe',lowImpact:false,alt:['Step-up','Split squat']},
+  rdl:{name:'Stacco rumeno manubri',need:'db',zone:'posteriori',lowImpact:true,alt:['Hip hinge bastone','Bridge a terra']},
+  ohp:{name:'Military press manubri',need:'db',zone:'spinta',lowImpact:true,alt:['Arnold press','Alzate laterali']},
+  plank:{name:'Plank',need:'body',zone:'core',lowImpact:true,alt:['Dead bug','Hollow hold']},
+};
+function equipOk(key){const e=state.workout.equip; if(key==='db') return e.db; if(key==='body') return e.body; if(key==='gym') return e.gym; return true }
+function safeOk(ex){ if(state.workout.safe.noJumps && ex.name.match(/salto|jump/i)) return false; if(state.workout.safe.knee && ex.zone==='gambe' && ex.lowImpact===false) return false; return true }
+function chooseStrength(slot){ // restituisce array di esercizi con set/rep in base allo slot
+  const base=[EX_DB.squat,EX_DB.pushup,EX_DB.row,EX_DB.lunge,EX_DB.rdl,EX_DB.ohp,EX_DB.plank].filter(ex=>equipOk(ex.need)&&safeOk(ex));
+  function pick(){ return base[Math.floor(Math.random()*base.length)] }
+  const out=[]; const add=(ex)=> out.push({name:ex.name, sets: slot>=45?3:(slot>=30?3:2), reps: ex===EX_DB.plank? (slot>=45?'45"':'30"') : (slot>=45?12:10), alt:ex.alt});
+  add(pick()); add(pick()); if(slot>=30) add(pick()); if(slot>=45) add(pick()); return dedup(out) }
+function dedup(arr){ const seen=new Set(); return arr.filter(o=>{const k=o.name; if(seen.has(k)) return false; seen.add(k); return true}) }
+function finisherFor(slot){ if(slot<=20) return {type:'EMOM',duration:8,desc:'1: Jumping jacks (40") • 2: Mountain climber (40")'}; if(slot<=30) return {type:'TABATA',duration:8,desc:'8× (20" on / 10" off) Air squat / High knees low impact'}; return {type:'HIIT',duration:12,desc:'6× (40" veloce / 20" lento) corsa sul posto o cyclette'} }
+function titleFor(days,slot){ if(days===3) return `Full Body (${slot}′)`; if(days===4) return `Upper/Lower + MetCon (${slot}′)`; return `Split leggero (${slot}′)` }
+function ensureWeekPlan(k){ if(!state.workout.plan[k]) state.workout.plan[k]={}; for(let d=0; d<7; d++){ if(!state.workout.plan[k][d]){ const days=state.workout.days, slot=state.workout.slot; if([1,3,5].includes(d) && days>=3 || (days===4 && [1,2,4,6].includes(d)) || (days>=5 && [1,2,3,5,6].includes(d)) ){ state.workout.plan[k][d] = { title:titleFor(days,slot), strength: chooseStrength(slot), finisher: finisherFor(slot) }; } else { state.workout.plan[k][d] = { title:'Riposo attivo', strength:[], finisher:{type:'LISS',duration:20,desc:'Camminata a passo svelto (Z2)'} }; } } } save() }
+function todayPlan(){ const k=weekKey(); ensureWeekPlan(k); const d=(new Date()).getDay(); return state.workout.plan[k][d] }
+
+/* ================== UI BINDINGS ================== */
+function paintSetup(){ $('#pesoTargetView').textContent=state.pesoTarget??'—'; $('#pesoStart').value=state.pesoStart??''; $('#pesoTarget').value=state.pesoTarget??''; $('#dataTarget').value=state.dataTarget??''; $('#orario').value=state.orario??'18:30'; $('#pillGoal').textContent=state.dataTarget?`Target: ${state.dataTarget}`:'Imposta obiettivo'; $('#prefCarne').checked=state.prefs.carne; $('#prefPesce').checked=state.prefs.pesce; $('#prefLegumi').checked=state.prefs.legumi; $('#prefUova').checked=state.prefs.uova; $('#prefLatticini').checked=state.prefs.latticini; $('#prefGlutine').checked=state.prefs.glutine; // workout prefs
+ $('#al_days').value=String(state.workout.days); $('#al_slot').value=String(state.workout.slot); $('#al_level').value=state.workout.level; $('#eq_body').checked=state.workout.equip.body; $('#eq_db').checked=state.workout.equip.db; $('#eq_gym').checked=state.workout.equip.gym; $('#no_jumps').checked=state.workout.safe.noJumps; $('#knee_safe').checked=state.workout.safe.knee; $('#back_safe').checked=state.workout.safe.back; }
+function progresso(){ const last=state.pesate.length?state.pesate[state.pesate.length-1].v:null; $('#pesoAttuale').textContent=last??'—'; if(last!=null && state.pesoStart!=null && state.pesoTarget!=null){ const tot=state.pesoStart-state.pesoTarget; const done=state.pesoStart-last; const p=Math.max(0,Math.min(100,(done/tot)*100)); $('#bar').style.width=p+'%'; $('#progressTxt').textContent=`Progresso: ${fmt(done)} kg persi su ${fmt(tot)} kg (${fmt(p)}%)`; } else { $('#bar').style.width='0%'; $('#progressTxt').textContent='Imposta peso iniziale/target e aggiungi una pesata.'; } }
+function drawChart(){ const c=$('#chart'); const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(30,10); ctx.lineTo(30,140); ctx.lineTo(580,140); ctx.stroke(); if(!state.pesate.length) return; const vals=state.pesate.map(p=>p.v); const min=Math.min(...vals,state.pesoTarget??vals[0])-1; const max=Math.max(...vals,state.pesoStart??vals[0])+1; const span=Math.max(1,max-min); if(state.pesoTarget!=null){ const ty=140-((state.pesoTarget-min)/span)*120; ctx.strokeStyle='#94a3b8'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(30,ty); ctx.lineTo(580,ty); ctx.stroke(); ctx.setLineDash([]); } ctx.strokeStyle='#16a34a'; ctx.lineWidth=2; ctx.beginPath(); state.pesate.forEach((p,i)=>{ const x=30+(i/(Math.max(1,state.pesate.length-1)))*550; const y=140-((p.v-min)/span)*120; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); ctx.fillStyle='#16a34a'; ctx.beginPath(); ctx.arc(x,y,2.4,0,Math.PI*2); ctx.fill();}); ctx.stroke(); }
+function paintStorico(){ const ul=$('#storico'); ul.innerHTML=''; [...state.pesate].reverse().forEach(p=>{ const li=document.createElement('li'); li.textContent=`${p.d} — ${fmt(p.v)} kg`; ul.appendChild(li); }); const ul2=$('#storicoCal'); ul2.innerHTML=''; [...state.pesate].reverse().forEach(p=>{ const li=document.createElement('li'); li.textContent=`${p.d} • Pesata: ${fmt(p.v)} kg`; ul2.appendChild(li); }); }
+function kcalTarget(){return{min:1700,max:1900}}
+function between(x,a,b){return x>=a && x<=b}
+function coach(){ const out=$('#coachMsg'); if(!(state.pesoStart&&state.pesoTarget&&state.dataTarget)){ out.textContent='Imposta peso iniziale, target e data per consigli mirati.'; $('#stateHint').innerHTML=''; return;} const kg=state.pesoStart-state.pesoTarget; const weeks=Math.max(1,Math.ceil((new Date(state.dataTarget)-new Date())/(7*86400000))); const req=kg/weeks; let badge='',tip=''; if(between(req,0.5,0.8)){ badge='<span class="state green">In linea (0,5–0,8 kg/settimana)</span>'; tip='Mantieni: 3 cardio + 3 forza. Kcal nel tuo range.';} else if(req>0.8){ badge='<span class="state red">Aggressivo</span>'; tip='Allunga la data o aggiungi un cardio breve: 10′ extra Z2 per 3x/sett.';} else { badge='<span class="state yellow">Molto leggero</span>'; tip='Puoi accelerare con 1 finisher HIIT in più a settimana.';} $('#stateHint').innerHTML=badge; const kcal=kcalTarget(); out.textContent=`Obiettivo: perdere ${fmt(kg)} kg in ${weeks} settimane (media ${fmt(req)} kg/settimana). Tieni le calorie tra ${kcal.min}-${kcal.max} kcal/dì.`; $('#kgDaPerdere').textContent=fmt(kg); $('#weeksAvail').textContent=weeks; const media=$('#mediaReq'), hint=$('#hintReq'); media.textContent=`${fmt(req)} kg/set`; media.className='state '+(req>0.8?'red':(req<0.5?'yellow':'green')); hint.textContent=tip; }
+
+/* ====== MENU UI ====== */
+let curDay=(new Date()).getDay();
+function renderMealsDay(){ $('#dayBadge').textContent=days[curDay]; const wrap=$('#mealsWrap'); wrap.innerHTML=''; const k=weekKey(); ensureWeekMenu(k); const order=['colazione','spuntino','pranzo','spuntino2','cena']; const titles={colazione:'Colazione',spuntino:'Spuntino mattina',pranzo:'Pranzo',spuntino2:'Spuntino pomeriggio',cena:'Cena'}; order.forEach(m=>{ const block=state.menu[k][curDay][m]; const box=document.createElement('div'); box.className='meal'; const title=document.createElement('h3'); title.textContent=titles[m]; box.appendChild(title); const opts=document.createElement('div'); opts.className='options'; block.options.forEach((opt,idx)=>{ const o=document.createElement('div'); o.className='option'+(idx===block.chosenIndex?' selected':''); o.innerHTML=`<div class="radio"></div><div><div><strong>${opt.name}</strong></div><div class="meta">~${opt.kcal} kcal</div><div class="small">${opt.items.map(it=>`${it.n} ${it.q}${it.u}`).join(' • ')}</div></div>`; o.addEventListener('click',()=>{ block.chosenIndex=idx; save(); renderMealsDay(); }); opts.appendChild(o); }); box.appendChild(opts); wrap.appendChild(box); }); }
+
+/* ====== SPESA UI ====== */
+function fillWeekSelect(){ const sel=$('#weekSelect'); sel.innerHTML=''; const base=new Date(); for(let i=-2;i<=3;i++){ const d=new Date(base); d.setDate(d.getDate()+i*7); const k=weekKey(d); const opt=document.createElement('option'); opt.value=k; opt.textContent=k; if(i===0) opt.selected=true; sel.appendChild(opt);} }
+function paintSpesa(){ const k=$('#weekSelect').value; ensureWeekMenu(k); if(!state.spesa[k]) rebuildShopping(k); const ul=$('#listaSpesa'); ul.innerHTML=''; Object.keys(state.spesa[k]).forEach(item=>{ const data=state.spesa[k][item]; const li=document.createElement('li'); li.innerHTML=`<label style="display:flex;align-items:center;gap:.6rem"><input type="checkbox" ${data.checked?'checked':''}/> <span style="flex:1">${item}</span> <span class="pill">${fmt(data.q)}</span></label>`; li.querySelector('input').addEventListener('change',e=>{ data.checked=e.target.checked; save(); }); ul.appendChild(li); }); }
+
+/* ====== CALENDAR UI ====== */
+function paintCalendario(){ const ul=$('#calList'); ul.innerHTML=''; const today=new Date(); for(let i=0;i<7;i++){ const d=new Date(today); d.setDate(today.getDate()+i); const dstr=d.toISOString().slice(0,10); const pl=(()=>{ const p=state.workout.plan[weekKey(d)]?.[d.getDay()]||null; return p? (p.title==='Riposo attivo'? 'Riposo attivo '+p.finisher.desc : p.title):'—'; })(); const li=document.createElement('li'); li.innerHTML=`<div><strong>${dstr}</strong><div class="tiny muted">${state.orario||'—'} • ${pl}</div></div>`; ul.appendChild(li); } }
+
+/* ====== WORKOUT UI ====== */
+let finisherTimer=null, secondsLeft=0;
+function mmss(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const sec=String(s%60).padStart(2,'0'); return `${m}:${sec}` }
+function startFinisher(sec){ clearInterval(finisherTimer); secondsLeft=sec; $('#clock').textContent=mmss(secondsLeft); finisherTimer=setInterval(()=>{ secondsLeft--; $('#clock').textContent=mmss(Math.max(0,secondsLeft)); if(secondsLeft<=0){ clearInterval(finisherTimer); alert('Finisher concluso 🔥'); } },1000) }
+function stopFinisher(){ clearInterval(finisherTimer) }
+function paintWorkoutToday(){ const plan=todayPlan(); $('#slotInfo').textContent=state.orario?`Oggi ${state.orario}`:'—'; $('#planTitle').textContent=plan.title; const ul=$('#strengthList'); ul.innerHTML=''; plan.strength.forEach(s=>{ const li=document.createElement('li'); li.className='cardRow'; li.innerHTML=`<div>${s.name} • ${s.sets}×${s.reps}</div><button class="btn ghost">Sostituisci</button>`; li.querySelector('button').addEventListener('click',()=>{ const alt=s.alt&&s.alt.length? s.alt[Math.floor(Math.random()*s.alt.length)] : 'Variante'; li.querySelector('div').textContent=`${alt} • ${s.sets}×${s.reps}`; }); ul.appendChild(li); }); $('#finisherDesc').textContent=`${plan.finisher.type} ${plan.finisher.duration}′ • ${plan.finisher.desc}`; $('#clock').textContent='00:00' }
+function paintWeekGrid(){ const k=weekKey(); ensureWeekPlan(k); const grid=$('#weekGrid'); grid.innerHTML=''; for(let d=0; d<7; d++){ const pl=state.workout.plan[k][d]; const dateLabel=days[d]; const status=(state.workout.log[weekKeyDate(d)]?.done?'done':(pl.title==='Riposo attivo'?'rest':'plan')); const badge=status==='done'?'<span class="badgeDone">Fatto</span>':(status==='rest'?'<span class="badgePlanned">Riposo</span>':'<span class="badgePlanned">Pianificato</span>'); const row=document.createElement('div'); row.className='cardRow'; row.innerHTML=`<div><strong>${dateLabel}</strong><div class="tiny muted">${pl.title}</div></div><div style="display:flex;gap:.4rem">${badge}<button class="btn ghost">Sposta</button></div>`; row.querySelector('button').addEventListener('click',()=>{ const target=prompt('Sposta a giorno (0=Dom ... 6=Sab):', String(d)); const t=parseInt(target,10); if(!isNaN(t)&&t>=0&&t<=6){ const tmp=state.workout.plan[k][d]; state.workout.plan[k][d]=state.workout.plan[k][t]; state.workout.plan[k][t]=tmp; save(); paintWeekGrid(); paintCalendario(); }}); grid.appendChild(row); }
+}
+function weekKeyDate(dayOffset){ const now=new Date(); const today=now.getDay(); const diff=dayOffset-today; const d=new Date(now); d.setDate(now.getDate()+diff); return d.toISOString().slice(0,10) }
+
+/* ====== EVENTS ====== */
+$('#salvaSetup').addEventListener('click',()=>{ const ps=parseFloat($('#pesoStart').value); if(!isNaN(ps)) state.pesoStart=ps; const pt=parseFloat($('#pesoTarget').value); if(!isNaN(pt)) state.pesoTarget=pt; state.dataTarget=$('#dataTarget').value||null; state.orario=$('#orario').value||'18:30'; save(); paintSetup(); progresso(); coach(); paintCalendario(); });
+$('#salvaPreferenze').addEventListener('click',()=>{ state.prefs={carne:$('#prefCarne').checked,pesce:$('#prefPesce').checked,legumi:$('#prefLegumi').checked,uova:$('#prefUova').checked,latticini:$('#prefLatticini').checked,glutine:$('#prefGlutine').checked}; save(); alert('Preferenze salvate. Puoi rigenerare il menù smart.'); });
+$('#generaSettimana').addEventListener('click',()=>{ const k=weekKey(); regenWeek(k); save(); renderMealsDay(); alert('Menù smart generato per la settimana corrente.'); });
+$('#resetMenu').addEventListener('click',()=>{ const k=weekKey(); if(confirm('Reset menù della settimana corrente?')){ delete state.menu[k]; save(); ensureWeekMenu(k); renderMealsDay(); }});
+$('#addPeso').addEventListener('click',()=>{ const v=parseFloat($('#pesoInput').value); if(isNaN(v)) return; state.pesate.push({d:iso(),v}); save(); $('#pesoInput').value=''; progresso(); drawChart(); paintStorico(); coach(); });
+
+// Workout events
+$('#saveWorkoutPrefs').addEventListener('click',()=>{ state.workout.days=parseInt($('#al_days').value,10); state.workout.slot=parseInt($('#al_slot').value,10); state.workout.level=$('#al_level').value; state.workout.equip={body:$('#eq_body').checked,db:$('#eq_db').checked,gym:$('#eq_gym').checked}; state.workout.safe={noJumps:$('#no_jumps').checked,knee:$('#knee_safe').checked,back:$('#back_safe').checked}; const k=weekKey(); delete state.workout.plan[k]; ensureWeekPlan(k); save(); paintWorkoutToday(); paintWeekGrid(); paintCalendario(); alert('Preferenze allenamento salvate e piano rigenerato.'); });
+$('#startFinisher').addEventListener('click',()=>{ const pl=todayPlan(); startFinisher(pl.finisher.duration*60) });
+$('#stopFinisher').addEventListener('click',stopFinisher);
+$('#completeWorkout').addEventListener('click',()=>{ const d=iso(); state.workout.log[d]={done:true,rpe:parseInt($('#rpe').value,10)}; save(); alert('Seduta salvata ✅'); paintWeekGrid(); });
+
+$('#prevDay').addEventListener('click',()=>{ curDay=(curDay+6)%7; renderMealsDay(); });
+$('#nextDay').addEventListener('click',()=>{ curDay=(curDay+1)%7; renderMealsDay(); });
+$('#rigeneraGiorno').addEventListener('click',()=>{ const k=weekKey(); regenDay(k,curDay); renderMealsDay(); });
+$('#rigeneraSettimana').addEventListener('click',()=>{ const k=weekKey(); regenWeek(k); renderMealsDay(); });
+
+$('#incluseTutte')?.addEventListener('change',()=>{ rebuildShopping($('#weekSelect').value); paintSpesa(); });
+$('#rebuildSpesa').addEventListener('click',()=>{ rebuildShopping($('#weekSelect').value); paintSpesa(); });
+$('#weekSelect').addEventListener('change',paintSpesa);
+$('#stampaSpesa').addEventListener('click',()=> window.print());
+
+$$('nav.bottom a').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); const tab=a.dataset.tab; $$('.section').forEach(s=>s.classList.remove('active')); $('#'+tab).classList.add('active'); $$('nav.bottom a').forEach(x=>x.classList.remove('active')); a.classList.add('active'); if(tab==='esercizi'){ paintWorkoutToday(); paintWeekGrid(); } }));
+
+/* ================== FIRST PAINT ================== */
+function firstPaint(){ fillWeekSelect(); paintSetup(); progresso(); drawChart(); paintStorico(); coach(); ensureWeekPlan(weekKey()); paintWorkoutToday(); paintWeekGrid(); renderMealsDay(); if(!state.spesa[weekKey()]) rebuildShopping(weekKey()); paintSpesa(); paintCalendario(); }
+firstPaint();
+</script>
+</body>
+</html>
